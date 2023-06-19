@@ -1,6 +1,6 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:to_do_app/modules/archived_tasks/archived_tasks_screen.dart';
 import 'package:to_do_app/modules/done_tasks/done_tasks_screen.dart';
 import 'package:sqflite/sqflite.dart';
@@ -23,8 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Database database;
   var scaffoldKey = GlobalKey<ScaffoldState>();
-  var formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   bool isBottomSheetOpen = false;
+  var fabIcon = const Icon(Icons.edit);
 
   var titleController = TextEditingController();
   var timeController = TextEditingController();
@@ -64,55 +65,142 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           // insertToDatabase();
           if (isBottomSheetOpen) {
-            formKey.currentState?.validate();
-            print(formKey.currentState?.validate());
-            Navigator.pop(context);
-            isBottomSheetOpen = false;
-            print('close bottom sheet');
+            print('validated? ${_formKey.currentState?.validate()}');
+
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context);
+              isBottomSheetOpen = false;
+              setState(() {
+                fabIcon = const Icon(Icons.edit);
+              });
+              print('close bottom sheet');
+            }
           } else {
             scaffoldKey.currentState?.showBottomSheet((context) => Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DefaultTextFormField(
-                    controller: titleController,
-                    hintText: 'Task Title',
-                    prefixIcon: Icon(Icons.title),
-                    validator: (String value){
-                      print('vv $value');
-                      if(value.isEmpty){
-                        return 'Task title must not be empty';
-                      }
-                      return null;
-                    },
-                    textInputType: TextInputType.text,
-                  ),
-                  DefaultTextFormField(
-                    controller: timeController,
-                    hintText: 'Task Time',
-                    prefixIcon: Icon(Icons.watch_later_outlined),
-                    validator: (String value){
-                      if(value.isEmpty){
-                        return 'Task time must not be empty';
-                      }
-                    },
-                    textInputType: TextInputType.datetime,
-                    // onFieldTap: (){
-                    //
-                    // },
-                  ),
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: titleController,
+                        keyboardType: TextInputType.text,
+                        validator: (value) {
+                          print('vv $value');
+                          if (value == null || value.isEmpty) {
+                            return 'Task title must not be empty';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          hintText: 'Task Title',
+                          prefixIcon: Icon(Icons.title),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: timeController,
+                        keyboardType: TextInputType.datetime,
+                        readOnly: true,
+                        //to hide keyboard
+                        showCursor: true,
+                        validator: (value) {
+                          print('task time: $value');
+                          if (value == null || value.isEmpty) {
+                            return 'Task time must not be empty';
+                          }
+                          return null;
+                        },
+                        onTap: () {
+                          print('pick time');
+                          showTimePicker(
+                                  context: context,
+                                  initialTime: TimeOfDay.now())
+                              .then((value) {
+                            if (value != null) {
+                              timeController.text =
+                                  value.format(context).toString();
+                              print(
+                                  'time: ${value.format(context).toString()}');
+                            }
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: 'Task Time',
+                          prefixIcon: Icon(Icons.watch_later_outlined),
+                        ),
+                      ),
+                      TextFormField(
+                        controller: dateController,
+                        keyboardType: TextInputType.datetime,
+                        readOnly: true,
+                        showCursor: true,
+                        validator: (value) {
+                          print('task date $value');
+                          if (value == null || value.isEmpty) {
+                            return 'Task date must not be empty';
+                          }
+                          return null;
+                        },
+                        onTap: () {
+                          showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime.now()
+                                      .add(const Duration(days: 365)))
+                              .then((value) {
+                            if (value != null) {
+                              dateController.text =
+                                  DateFormat.yMMMd().format(value);
+                              print(
+                                  'time: ${DateFormat.yMMMd().format(value)}');
+                            }
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: 'Task Date',
+                          prefixIcon: Icon(Icons.date_range),
+                        ),
+                      ),
 
+                      // DefaultTextFormField(
+                      //   controller: titleController,
+                      //   hintText: 'Task Title',
+                      //   prefixIcon: Icon(Icons.title),
+                      //   validator: (String value){
+                      //     print('vv $value');
+                      //     if(value.isEmpty){
+                      //       return 'Task title must not be empty';
+                      //     }
+                      //     return null;
+                      //   },
+                      //   textInputType: TextInputType.text,
+                      // ),
+                      // DefaultTextFormField(
+                      //   controller: timeController,
+                      //   hintText: 'Task Time',
+                      //   prefixIcon: Icon(Icons.watch_later_outlined),
+                      //   validator: (String value){
+                      //     if(value.isEmpty){
+                      //       return 'Task time must not be empty';
+                      //     }
+                      //   },
+                      //   textInputType: TextInputType.datetime,
+                      //   // onFieldTap: (){
+                      //   //
+                      //   // },
+                      // ),
+                    ],
+                  ),
+                ));
 
-                ],
-              ),
-            ));
             isBottomSheetOpen = true;
+            setState(() {
+              fabIcon = const Icon(Icons.add);
+            });
             print('open bottom sheet');
-
           }
         },
-        child: Icon(Icons.add),
+        child: fabIcon,
       ),
     );
   }
@@ -140,7 +228,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void insertToDatabase() {
     database.transaction((txn) {
-      return txn.rawInsert(
+      return txn
+          .rawInsert(
               'INSERT INTO tasks(title, date, time, status) VALUES ("title", "12346", "1333", "new")')
           .then((value) {
         print('$value row inserted');
