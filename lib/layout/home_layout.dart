@@ -2,13 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:to_do_app/modules/archived_tasks/archived_tasks_screen.dart';
-import 'package:to_do_app/modules/done_tasks/done_tasks_screen.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:to_do_app/shard/components.dart';
 import 'package:to_do_app/shard/cubit/cubit.dart';
 import 'package:to_do_app/shard/cubit/states.dart';
-import '../modules/new_tasks/new_tasks_screen.dart';
 
 class HomeScreen extends StatelessWidget {
 
@@ -66,6 +61,9 @@ class HomeScreen extends StatelessWidget {
                         date: dateController.text,
                         time: timeController.text);
 
+                    titleController.text = '';
+                    timeController.text = '';
+                    dateController.text = '';
                   }
                 } else {
                   scaffoldKey.currentState
