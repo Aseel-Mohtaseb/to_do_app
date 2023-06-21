@@ -12,7 +12,7 @@ class NewTasks extends StatelessWidget {
       builder: (context, state) {
         var tasks = AppCubit.get(context).newTasksList;
         return ListView.separated(
-            itemBuilder: (context, index) => NewTaskItem(taskModel: tasks[index]),
+            itemBuilder: (context, index) => TaskItem(taskModel: tasks[index]),
             separatorBuilder: (context, index) => Container(
               height: 1,
               color: Colors.grey,

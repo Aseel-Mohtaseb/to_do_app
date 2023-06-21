@@ -75,15 +75,22 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   void getFromDatabase(database) {
+    newTasksList = [];
+    doneTasksList = [];
+    archivedTasksList = [];
+
     emit(AppGetFromDatabaseLoadingState());
     database.rawQuery('SELECT * FROM tasks').then((value) {
+
       value.forEach((element) {
-        if (value['status'] == 'new')
+        if (element['status'] == 'new')
           newTasksList.add(element);
-        else if (value['status'] == 'done')
+        else if (element['status'] == 'done')
           doneTasksList.add(element);
         else
           archivedTasksList.add(element);
+
+        print(element);
 
       });
       print('get tasks from database');
@@ -91,13 +98,23 @@ class AppCubit extends Cubit<AppStates> {
     });
   }
 
-  void updateData({
+  void updateTaskStatus({
     required String status,
     required int id,
   }) async {
-    database.rawUpdate('UPDATE tasks SET status = ?  WHERE is = ?',
-        ['$state', id]).then((value) {
+    await database.rawUpdate('UPDATE tasks SET status = ?  WHERE id = ?',
+        ['$status', id]).then((value) {
       emit(AppUpdateDatabaseState());
+      getFromDatabase(database);
+    });
+  }
+
+  void deleteTaskStatus({
+    required int id,
+  }) async {
+    await database.rawUpdate('DELETE FROM tasks WHERE id = ?', [id]).then((value) {
+      emit(AppDeleteDatabaseState());
+      getFromDatabase(database);
     });
   }
 
