@@ -8,7 +8,11 @@ class AppCreateDatabaseState extends AppStates{}
 
 class AppInsertToDatabaseState extends AppStates{}
 
+class AppGetFromDatabaseLoadingState extends AppStates{}
+
 class AppGetFromDatabaseState extends AppStates{}
+
+class AppUpdateDatabaseState extends AppStates{}
 
 class AppOpenBottomSheetState extends AppStates{}
 

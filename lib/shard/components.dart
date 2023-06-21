@@ -35,7 +35,7 @@ class _DefaultTextFormFieldState extends State<DefaultTextFormField> {
       keyboardType: widget.textInputType,
       obscureText: widget.obscureText,
       validator: (value){
-        print('valuee $value');
+        print('value $value');
           widget.validator;
       },
       onTap: (){

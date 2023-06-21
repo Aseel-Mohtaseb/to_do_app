@@ -19,12 +19,10 @@ class AppCubit extends Cubit<AppStates> {
   int currentIndex = 0;
 
   List<Map> newTasksList = [];
+  List<Map> doneTasksList = [];
+  List<Map> archivedTasksList = [];
 
-  late List<Widget> screensList = [
-    NewTasks(newTasksList: newTasksList),
-    DoneTasks(),
-    ArchivedTasks()
-  ];
+  late List<Widget> screensList = [NewTasks(), DoneTasks(), ArchivedTasks()];
 
   List<String> titlesList = ['New Tasks', 'Done Tasks', 'Archived Tasks'];
 
@@ -58,11 +56,11 @@ class AppCubit extends Cubit<AppStates> {
     );
   }
 
-  Future insertToDatabase(
+  void insertToDatabase(
       {required String title,
       required String time,
       required String date}) async {
-    return await database.transaction((txn) {
+    await database.transaction((txn) {
       return txn
           .rawInsert(
               'INSERT INTO tasks(title, date, time, status) VALUES ("$title", "$date", "$time", "new")')
@@ -76,10 +74,31 @@ class AppCubit extends Cubit<AppStates> {
     });
   }
 
-  void getFromDatabase(database) async {
-    newTasksList = await database.rawQuery('SELECT * FROM tasks');
-    print('get tasks from database');
-    emit(AppGetFromDatabaseState());
+  void getFromDatabase(database) {
+    emit(AppGetFromDatabaseLoadingState());
+    database.rawQuery('SELECT * FROM tasks').then((value) {
+      value.forEach((element) {
+        if (value['status'] == 'new')
+          newTasksList.add(element);
+        else if (value['status'] == 'done')
+          doneTasksList.add(element);
+        else
+          archivedTasksList.add(element);
+
+      });
+      print('get tasks from database');
+      emit(AppGetFromDatabaseState());
+    });
+  }
+
+  void updateData({
+    required String status,
+    required int id,
+  }) async {
+    database.rawUpdate('UPDATE tasks SET status = ?  WHERE is = ?',
+        ['$state', id]).then((value) {
+      emit(AppUpdateDatabaseState());
+    });
   }
 
   bool isBottomSheetOpen = false;

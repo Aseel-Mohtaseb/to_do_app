@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:to_do_app/shard/cubit/cubit.dart';
+import 'package:to_do_app/shard/cubit/states.dart';
 import 'new_task_item.dart';
 
-class NewTasks extends StatefulWidget {
-  List<Map> newTasksList ;
-  NewTasks({required this.newTasksList});
-
-  @override
-  _NewTasksState createState() => _NewTasksState();
-}
-
-class _NewTasksState extends State<NewTasks> {
+class NewTasks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-        itemBuilder: (context, index) => NewTaskItem(taskModel: widget.newTasksList[index]),
-        separatorBuilder: (context, index) => Container(
+    return BlocConsumer<AppCubit, AppStates>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        var tasks = AppCubit.get(context).newTasksList;
+        return ListView.separated(
+            itemBuilder: (context, index) => NewTaskItem(taskModel: tasks[index]),
+            separatorBuilder: (context, index) => Container(
               height: 1,
               color: Colors.grey,
             ),
-        itemCount: widget.newTasksList.length);
+            itemCount: tasks.length);
+      },
+    );
   }
 }
+

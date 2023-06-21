@@ -9,7 +9,6 @@ import 'package:to_do_app/shard/components.dart';
 import 'package:to_do_app/shard/cubit/cubit.dart';
 import 'package:to_do_app/shard/cubit/states.dart';
 import '../modules/new_tasks/new_tasks_screen.dart';
-import '../shard/constants.dart';
 
 class HomeScreen extends StatelessWidget {
 
@@ -25,7 +24,11 @@ class HomeScreen extends StatelessWidget {
     return BlocProvider(
       create: (BuildContext context) => AppCubit()..createDatabase(),
       child: BlocConsumer<AppCubit, AppStates>(
-        listener: (BuildContext context, AppStates state) {},
+        listener: (BuildContext context, AppStates state) {
+          if (state is AppInsertToDatabaseState){
+            Navigator.pop(context);
+          }
+        },
         builder: (BuildContext context, AppStates state) {
           AppCubit appCubit = AppCubit.get(context);
 
@@ -34,7 +37,7 @@ class HomeScreen extends StatelessWidget {
             appBar: AppBar(
               title: Text(appCubit.titlesList[appCubit.currentIndex]),
             ),
-            body: appCubit.newTasksList.isEmpty
+            body: state is AppGetFromDatabaseLoadingState
                 ? Center(child: CircularProgressIndicator())
                 : appCubit.screensList[appCubit.currentIndex],
             bottomNavigationBar: BottomNavigationBar(
@@ -61,12 +64,8 @@ class HomeScreen extends StatelessWidget {
                     appCubit.insertToDatabase(
                         title: titleController.text,
                         date: dateController.text,
-                        time: timeController.text)
-                        .then((value) {
-                      Navigator.pop(context);
-                      appCubit.closeBottomSheet();
-                      print('close bottom sheet');
-                    });
+                        time: timeController.text);
+
                   }
                 } else {
                   scaffoldKey.currentState
